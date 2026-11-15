@@ -298,8 +298,8 @@
     'https://www.cardmarket.com/en/Lorcana/Wants';
 
   // V.N comes from data-cm-version, card type from data-card-type (both set
-  // server-side in collection.py). Scope `'standard'` = ≤ 204, `'specials'`
-  // = enchanted + iconic, `'all'` (default) = no filter.
+  // server-side in collection.py). Scope `'standard'` = regular rarities,
+  // `'specials'` = epic + enchanted + iconic + promo, `'all'` (default) = no filter.
   function formatBinderCardmarket(binderEl, scope = 'all') {
     let missing = Array.from(binderEl.querySelectorAll('.pocket--missing'));
     if (scope === 'standard') {

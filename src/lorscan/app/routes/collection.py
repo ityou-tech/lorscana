@@ -2,42 +2,64 @@
 
 from __future__ import annotations
 
-import re
-
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from lorscan.services.sets import release_index, release_sort_key
 from lorscan.storage.db import Database
 
-# Lorcana sets are numbered in three contiguous bands: 1–204 are standard
-# rarity printings (Common through Legendary), 205–216 are the Enchanted
-# reprints, 217+ are the Iconic / Infinity tier. We bucket on collector
-# number rather than `rarity` because the cutoff is set-stable and lets the
-# UI dropdown filter "≤ 204" precisely without needing a rarity allowlist.
-_TYPE_STANDARD_MAX = 204
-_TYPE_ENCHANTED_MAX = 216
-_LEADING_DIGITS = re.compile(r"^(\d+)")
+# Completion buckets follow the catalog's `rarity`, not collector-number
+# bands: the special tiers don't sit at fixed positions (ITI has 18 Enchanted
+# at 205-222, later sets put Epic at 205+ and Iconic at 241+, and base sets
+# can run past 204). Every other rarity counts as `standard`, except the
+# promo printings picked out by `_tag_promos`.
+_SPECIAL_RARITY_TYPES = {
+    "epic": "epic",
+    "enchanted": "enchanted",
+    "iconic": "iconic",
+}
 
 
-def _classify_card_type(collector_number: str | None) -> str:
-    """Return one of `standard`, `enchanted`, `iconic` for a collector number.
+def _classify_card_type(rarity: str | None) -> str:
+    """Return one of `standard`, `epic`, `enchanted`, `iconic` for a rarity."""
+    return _SPECIAL_RARITY_TYPES.get((rarity or "").strip().lower(), "standard")
 
-    Non-numeric or alpha-suffixed collector numbers (e.g. ITI's `4a`/`4b`
-    alt-art commons) classify as `standard` — they're regular-rarity
-    printings that just share a base position.
+
+def _leading_number(collector_number: str | None) -> int | None:
+    """Numeric part of a collector number (`4a` -> 4), or None if it has none."""
+    digits = ""
+    for ch in collector_number or "":
+        if not ch.isdigit():
+            break
+        digits += ch
+    return int(digits) if digits else None
+
+
+def _tag_promos(cards: list[dict]) -> None:
+    """Re-tag `standard` cards that sit outside a set's numbered base run as `promo`.
+
+    Promo / prize printings keep a regular rarity upstream (ITI #223 Piglet is
+    Super Rare), so rarity alone can't spot them. They are numbered after the
+    set's special tiers begin, or as #0 (FAB's Bruno Madrigal). A regular card
+    past #204 but before the first special tier is still base set (AOV runs to
+    #207).
     """
-    if not collector_number:
-        return "standard"
-    m = _LEADING_DIGITS.match(collector_number)
-    if not m:
-        return "standard"
-    n = int(m.group(1))
-    if n <= _TYPE_STANDARD_MAX:
-        return "standard"
-    if n <= _TYPE_ENCHANTED_MAX:
-        return "enchanted"
-    return "iconic"
+    special_numbers = [
+        n
+        for c in cards
+        if c["card_type"] != "standard"
+        and (n := _leading_number(c["collector_number"])) is not None
+    ]
+    first_special = min(special_numbers, default=None)
+    for card in cards:
+        if card["card_type"] != "standard":
+            continue
+        n = _leading_number(card["collector_number"])
+        if n is None:
+            continue
+        if n == 0 or (first_special is not None and n > first_special):
+            card["card_type"] = "promo"
+
 
 router = APIRouter()
 
@@ -103,7 +125,7 @@ def _build_binders(db: Database) -> list[dict]:
     for s in sorted_sets:
         rows = db.connection.execute(
             "SELECT c.card_id, c.collector_number, c.name, c.subtitle, "
-            "       c.set_code, c.cardmarket_url, c.cardtrader_url, "
+            "       c.set_code, c.rarity, c.cardmarket_url, c.cardtrader_url, "
             "       ci.id AS collection_item_id, "
             "       COALESCE(ci.quantity, 0) AS quantity "
             "FROM cards c "
@@ -119,6 +141,7 @@ def _build_binders(db: Database) -> list[dict]:
                 "name": r["name"],
                 "subtitle": r["subtitle"],
                 "set_code": r["set_code"],
+                "card_type": _classify_card_type(r["rarity"]),
                 "owned": r["collection_item_id"] is not None,
                 "collection_item_id": r["collection_item_id"],
                 "quantity": r["quantity"],
@@ -138,12 +161,14 @@ def _build_binders(db: Database) -> list[dict]:
             key = (card["name"], card["subtitle"])
             version_seen[key] = version_seen.get(key, 0) + 1
             card["cardmarket_version"] = version_seen[key]
-            card["card_type"] = _classify_card_type(card["collector_number"])
+        _tag_promos(cards)
 
         buckets: dict[str, dict[str, float]] = {
             "standard": {"owned": 0, "total": 0},
+            "epic": {"owned": 0, "total": 0},
             "enchanted": {"owned": 0, "total": 0},
             "iconic": {"owned": 0, "total": 0},
+            "promo": {"owned": 0, "total": 0},
         }
         for card in cards:
             b = buckets[card["card_type"]]

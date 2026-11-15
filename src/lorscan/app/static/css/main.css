@@ -948,17 +948,24 @@ body.lightbox-open { overflow: hidden; }
   transition: width 0.35s ease;
 }
 /* Per-bucket fills mirror the previous chip palette: white for Std (the
-   baseline), amber for Enchanted (warm rarity frame), teal for Iconic
-   (cool top tier). Higher alpha than chips because a 5px sliver needs
-   the saturation to read against the dark track. */
+   baseline), violet for Epic, amber for Enchanted (warm rarity frame),
+   teal for Iconic (cool top tier), pink for Promo. Higher alpha than
+   chips because a 5px sliver needs the saturation to read against the
+   dark track. */
 .binder-progress-row--standard .binder-progress-fill {
   background: rgba(255, 255, 255, 0.85);
+}
+.binder-progress-row--epic .binder-progress-fill {
+  background: #b98cf5;
 }
 .binder-progress-row--enchanted .binder-progress-fill {
   background: #f3a535;
 }
 .binder-progress-row--iconic .binder-progress-fill {
   background: #40d3bf;
+}
+.binder-progress-row--promo .binder-progress-fill {
+  background: #f27aa6;
 }
 
 /* ============================================================

@@ -38,11 +38,11 @@
         <span class="cm-menu" data-cm-menu="{{ binder.set_code }}" role="menu" hidden>
           <button type="button" class="cm-menu-item" role="menuitem"
                   data-copy-cm-binder="{{ binder.set_code }}" data-cm-scope="standard">
-            Standard (≤ 204)
+            Standard
           </button>
           <button type="button" class="cm-menu-item" role="menuitem"
                   data-copy-cm-binder="{{ binder.set_code }}" data-cm-scope="specials">
-            Specials (&gt; 204)
+            Specials
           </button>
           <button type="button" class="cm-menu-item" role="menuitem"
                   data-copy-cm-binder="{{ binder.set_code }}" data-cm-scope="all">
@@ -55,9 +55,11 @@
     </div>
     <div class="binder-progress-group" aria-label="Per-bucket completion">
       {% for key, label, tooltip in [
-        ('standard', 'Std', 'Standard rarities (collector # ≤ 204)'),
-        ('enchanted', 'Ench', 'Enchanted reprints (collector # 205–216)'),
-        ('iconic', 'Ic', 'Iconic / Infinity tier (collector # ≥ 217)'),
+        ('standard', 'Std', 'Standard rarities (Common through Legendary)'),
+        ('epic', 'Epic', 'Epic rarity'),
+        ('enchanted', 'Ench', 'Enchanted rarity'),
+        ('iconic', 'Ic', 'Iconic rarity'),
+        ('promo', 'Promo', 'Promo / prize printings numbered outside the base set'),
       ] %}
       {% set bucket = binder.buckets[key] %}
       {% if bucket.total > 0 %}
