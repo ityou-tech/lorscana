@@ -110,6 +110,25 @@
 
   if (!form) return;
 
+  // Remember mode + set per device so paging through a binder doesn't
+  // mean re-picking the set every time. Storage can be unavailable
+  // (private mode); the form just falls back to its defaults then.
+  const SETTINGS_KEY = 'lorscan.scanSettings';
+  try {
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+    if (saved) {
+      form.querySelectorAll('input[name="mode"]').forEach((radio) => {
+        radio.checked = radio.value === saved.mode;
+      });
+      if (!form.querySelector('input[name="mode"]:checked')) {
+        form.querySelector('input[name="mode"]').checked = true;
+      }
+      const setSelect = form.elements.set_code;
+      const known = [...setSelect.options].some((o) => !o.disabled && o.value === saved.set_code);
+      setSelect.value = known ? saved.set_code : '';
+    }
+  } catch (_) { /* defaults stand */ }
+
   // The visible button forwards clicks to the hidden file input, which
   // triggers the OS picker (with native "Take Photo / Photo Library"
   // sheet on iOS/Android).
@@ -146,6 +165,12 @@
   });
 
   form.addEventListener('submit', function() {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+        mode: form.elements.mode.value,
+        set_code: form.elements.set_code.value,
+      }));
+    } catch (_) { /* not remembered; harmless */ }
     button.disabled = true;
     button.textContent = 'Scanning...';
     overlay.hidden = false;

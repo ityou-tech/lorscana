@@ -141,6 +141,11 @@
       <button type="submit" class="primary">Accept matched cards into collection</button>
       <span class="hint">Only cells with a confirmed match will be added.</span>
     </form>
+    <a href="/scan" class="scan-another scan-another--quiet">Scan another page →</a>
+  </footer>
+  {% else %}
+  <footer class="result-actions">
+    <a href="/scan" class="primary scan-another">📷 Scan another page</a>
   </footer>
   {% endif %}
 
@@ -161,5 +166,4 @@
   {% endif %}
 </section>
 
-<p class="back-link"><a href="/scan">← Back to Scan</a></p>
 {% endblock %}

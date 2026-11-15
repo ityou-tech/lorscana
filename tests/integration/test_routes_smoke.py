@@ -397,6 +397,33 @@ def test_scan_apply_adds_matched_cards_to_collection(client: TestClient):
     assert "Hermes" in coll_response.text
 
 
+def test_scan_detail_offers_scan_another_page(client: TestClient):
+    """The detail page links back to the scan form both before and after
+    the matches are accepted, so paging through a binder is one tap."""
+    with patch(
+        "lorscan.app.routes.scan.scan_with_clip",
+        return_value=_fake_tile_matches(),
+    ):
+        upload = client.post(
+            "/scan/upload",
+            files={"photo": ("page.jpg", _make_jpeg(200, 200), "image/jpeg")},
+            follow_redirects=False,
+        )
+    location = upload.headers["location"]
+    link = re.compile(r'<a[^>]*href="/scan"[^>]*>[^<]*Scan another page')
+
+    assert link.search(client.get(location).text)
+    client.post(f"{location}/apply", follow_redirects=False)
+    assert link.search(client.get(location).text)
+
+
+def test_scan_form_remembers_settings_in_browser(client: TestClient):
+    """The form persists mode + set_code client-side; check the hook is
+    wired (behaviour itself is exercised in a real browser)."""
+    body = client.get("/scan").text
+    assert "lorscan.scanSettings" in body
+
+
 def test_collection_renders_global_copy_want_button(client: TestClient):
     """The global Cardmarket copy button is rendered when there are missing
     cards (data-copy-cm-all attribute is the JS hook)."""

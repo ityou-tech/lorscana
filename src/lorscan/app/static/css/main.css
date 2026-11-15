@@ -370,10 +370,28 @@ button.primary {
   transition: transform 0.05s, box-shadow 0.12s;
   align-self: flex-start;
 }
+/* Link styled as the primary button (e.g. "Scan another page"). */
+a.primary {
+  display: inline-block;
+  background: var(--secondary);
+  color: var(--secondary-on);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 12px 24px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: var(--shadow-block);
+  transition: transform 0.05s, box-shadow 0.12s;
+}
+a.primary:hover,
 button.primary:hover {
   transform: translate(-2px, -2px);
   box-shadow: 6px 6px 0 var(--primary);
 }
+a.primary:active,
 button.primary:active {
   transform: translate(2px, 2px);
   box-shadow: 0 0 0 var(--primary);
@@ -1597,9 +1615,9 @@ input.flip-current:focus {
 /* Make the cell positioned so the absolute button anchors to it. */
 .binder-cell { position: relative; }
 
-/* Back link */
-.back-link {
-  margin-top: 16px;
+/* Quiet "skip" variant shown beside the Accept button. */
+.scan-another--quiet {
+  margin-left: auto;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
