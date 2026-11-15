@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from PIL import Image, ImageOps
 
 from lorscan.services.embeddings import CardImageIndex
+from lorscan.services.image_cache import find_cached_image
 from lorscan.services.photos import (
     ensure_supported_format,
     hash_bytes,
@@ -407,20 +408,21 @@ async def card_image(request: Request, card_id: str) -> FileResponse:
     """Serve a catalog card image from the local cache.
 
     Used by the binder-grid view to show the matched card next to each
-    detected cell. Returns 404 if the image hasn't been downloaded yet
-    (which only happens for cards skipped during `index-images`).
+    detected cell. A user override wins over the cache. Returns 404 if the
+    image hasn't been downloaded yet (which only happens for cards skipped
+    during `index-images`).
     """
     cfg = request.app.state.config
-    images_dir = cfg.cache_dir / "images"
     # Card IDs are uppercase alphanumeric + hyphens (e.g. ROF-058). Reject
     # anything else as a defense-in-depth path-traversal guard.
     if not card_id.replace("-", "").isalnum():
         raise HTTPException(400, "Invalid card_id")
-    for suffix in (".png", ".jpg", ".jpeg", ".webp"):
-        path = images_dir / f"{card_id}{suffix}"
-        if path.exists():
-            return FileResponse(path)
-    raise HTTPException(404, "Card image not cached.")
+    path = find_cached_image(
+        card_id, cache_dir=cfg.cache_dir / "images", overrides_dir=cfg.overrides_dir
+    )
+    if path is None:
+        raise HTTPException(404, "Card image not cached.")
+    return FileResponse(path)
 
 
 @router.get("/scan/{scan_id}/photo")

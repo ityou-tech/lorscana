@@ -105,6 +105,27 @@ def find_override(card_id: str, *, overrides_dir: Path) -> Path | None:
     return None
 
 
+def find_cached_image(
+    card_id: str, *, cache_dir: Path, overrides_dir: Path | None = None
+) -> Path | None:
+    """Return the image to display for `card_id`, without knowing its URL.
+
+    Mirrors `_fetch_one`'s precedence: a user override wins, otherwise any
+    non-empty `<card_id>.*` file in the cache. `_purge_stale_cache_files`
+    keeps one file per card, but pick the newest in case a purge raced."""
+    if overrides_dir is not None:
+        override = find_override(card_id, overrides_dir=overrides_dir)
+        if override is not None:
+            return override
+    if not cache_dir.is_dir():
+        return None
+    candidates = [
+        p for p in cache_dir.glob(f"{_safe_id(card_id)}.*")
+        if p.is_file() and p.stat().st_size > 0
+    ]
+    return max(candidates, key=lambda p: p.stat().st_mtime, default=None)
+
+
 async def _fetch_one(
     client: httpx.AsyncClient,
     sem: asyncio.Semaphore,

@@ -262,6 +262,48 @@ def test_collection_greys_out_sets_without_cards(tmp_path: Path):
     assert "Upcoming" in body
 
 
+def _client_for(tmp_path: Path) -> tuple[TestClient, Config]:
+    cfg = Config(
+        anthropic_model="claude-opus-4-7",
+        per_scan_budget_usd=0.50,
+        monthly_budget_usd=None,
+        data_dir=tmp_path,
+    )
+    _seed_db(cfg)
+    _write_fake_index(cfg)
+    return TestClient(create_app(config=cfg)), cfg
+
+
+def test_card_image_serves_url_hashed_cache_file(tmp_path: Path):
+    """image_cache names files `<card_id>.<url_hash>.<ext>`; the route must
+    find them without knowing the hash."""
+    client, cfg = _client_for(tmp_path)
+    images = cfg.cache_dir / "images"
+    images.mkdir(parents=True)
+    (images / "TFC-127.1a2b3c4d.jpg").write_bytes(_make_jpeg())
+    response = client.get("/card/TFC-127/image")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/jpeg"
+
+
+def test_card_image_prefers_user_override(tmp_path: Path):
+    client, cfg = _client_for(tmp_path)
+    images = cfg.cache_dir / "images"
+    images.mkdir(parents=True)
+    (images / "TFC-127.1a2b3c4d.jpg").write_bytes(_make_jpeg())
+    cfg.overrides_dir.mkdir(parents=True)
+    override = _make_jpeg(color=(1, 2, 3))
+    (cfg.overrides_dir / "TFC-127.jpg").write_bytes(override)
+    response = client.get("/card/TFC-127/image")
+    assert response.status_code == 200
+    assert response.content == override
+
+
+def test_card_image_404_when_not_cached(tmp_path: Path):
+    client, _ = _client_for(tmp_path)
+    assert client.get("/card/TFC-127/image").status_code == 404
+
+
 def test_missing_route_is_gone(client: TestClient):
     response = client.get("/missing")
     assert response.status_code == 404
