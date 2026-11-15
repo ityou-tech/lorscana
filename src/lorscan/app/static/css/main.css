@@ -1659,6 +1659,23 @@ input.flip-current:focus {
   text-align: center;
 }
 
+/* Announced set with no cards upstream yet: same binder, drained of
+   colour so it reads as "not here yet" next to the real sets. */
+.binder--upcoming {
+  filter: grayscale(1);
+  opacity: 0.55;
+  box-shadow: none;
+}
+.binder--upcoming .binder-summary { cursor: default; }
+.binder-upcoming-tag {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px dashed currentColor;
+  border-radius: 3px;
+}
+
 /* ============================================================
    SMALL SCREENS
    ============================================================ */

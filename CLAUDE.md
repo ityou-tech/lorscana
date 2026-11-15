@@ -43,7 +43,7 @@ The composite `card_id` (e.g. `TFC-001`) is the primary key for `cards` and is r
 - **lorscan internal**: 3-letter codes (`TFC`, `ROF`, `ITI`, ...) — see README's set-codes table.
 - **LorcanaJSON upstream**: numeric (`"1"`, `"2"`, ..., `"Q1"` for Quests).
 
-The bridge is `services/lorcana_json/set_codes.py::LORCANA_JSON_SET_CODE_MAP`. **When a new Lorcana set drops, update this map AND the README's set-codes table.** Cards with an unknown numeric set are skipped (counted in `unknown_sets_skipped`) rather than crashing the sync.
+The bridge is `services/lorcana_json/set_codes.py::LORCANA_JSON_SET_CODE_MAP`. **When a new Lorcana set drops, update this map, `services/sets.py::LORCANA_RELEASE_ORDER` (UI ordering), AND the README's set-codes table.** Cards with an unknown numeric set are skipped (counted in `unknown_sets_skipped`) rather than crashing the sync.
 
 ### Recognition pipeline
 

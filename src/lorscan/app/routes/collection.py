@@ -163,6 +163,8 @@ def _build_binders(db: Database) -> list[dict]:
                 "set_code": s["set_code"],
                 "name": s["name"],
                 "chapter": chapter,
+                # Announced sets appear upstream before their cards do.
+                "upcoming": not cards,
                 "owned_count": owned_count,
                 "total": len(cards),
                 "pct": round(owned_count / len(cards) * 100, 1) if cards else 0,

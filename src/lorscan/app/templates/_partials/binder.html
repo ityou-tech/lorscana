@@ -4,12 +4,12 @@
 
   Required context:
     binder  — dict from collection._build_binders() (set_code, name, chapter,
-              owned_count, total, pct, pages: list[list[card_dict]])
+              upcoming, owned_count, total, pct, pages: list[list[card_dict]])
 
   Emits: <details> wrapper (so users can collapse a binder), default open
   for sets the caller wants prominent.
 #}
-<details class="binder binder--collection" id="{{ binder.set_code }}">
+<details class="binder binder--collection{% if binder.upcoming %} binder--upcoming{% endif %}" id="{{ binder.set_code }}">
   <summary class="binder-summary">
     <div class="binder-spine">
       <div class="binder-title">
@@ -18,6 +18,9 @@
         <code class="binder-set-code">{{ binder.set_code }}</code>
       </div>
       <div class="binder-stats">
+        {% if binder.upcoming %}
+        <span class="binder-upcoming-tag">Upcoming</span>
+        {% else %}
         <span class="binder-stat-num">{{ binder.owned_count }}</span>
         <span class="binder-stat-sep">/</span>
         <span class="binder-stat-tot">{{ binder.total }}</span>
@@ -46,6 +49,7 @@
             All
           </button>
         </span>
+        {% endif %}
         {% endif %}
       </div>
     </div>

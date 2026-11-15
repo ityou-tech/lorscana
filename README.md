@@ -69,9 +69,15 @@ The local DB stores 3-letter codes in official release order:
 | 10 | WHI  | Whispers in the Well  |
 | 11 | WIN  | Winterspell           |
 | 12 | WUN  | Wilds Unknown         |
-| 13 | AOV  | Attack of the Vine    |
+| 13 | AOV  | Attack of the Vine!   |
 | 14 | HYC  | Hyperia City          |
-| Q1 | Q1   | Illumineer's Quest    |
+| 15 | ITK  | Into the Inkdark ¹    |
+| 16 | COQ  | Cosmic Quest ¹        |
+| Q1 | Q1   | Illumineer's Quest: Deep Trouble           |
+| Q2 | Q2   | Illumineer's Quest: Palace Heist           |
+| Q3 | Q3   | Illumineer's Quest: The Great Hunny Rescue |
+
+¹ Announced but not yet released; codes are provisional until cards land upstream.
 
 Each main set has ~204 numbered cards plus enchanteds (205–223), iconics,
 and some promos. lorscan imports all of them, so an enchanted in a "missing"

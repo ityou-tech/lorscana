@@ -240,6 +240,28 @@ def test_collection_header_shows_cards_needed_stat(client: TestClient):
     assert "sets unfinished" in body
 
 
+def test_collection_greys_out_sets_without_cards(tmp_path: Path):
+    """Announced sets land in `sets` before any cards do; they still render,
+    but as a muted "upcoming" binder."""
+    cfg = Config(
+        anthropic_model="claude-opus-4-7",
+        per_scan_budget_usd=0.50,
+        monthly_budget_usd=None,
+        data_dir=tmp_path,
+    )
+    _seed_db(cfg)
+    db = Database.connect(str(cfg.db_path))
+    db.upsert_set(CardSet(set_code="ITK", name="Into the Inkdark", total_cards=0))
+    db.close()
+    _write_fake_index(cfg)
+    response = TestClient(create_app(config=cfg)).get("/collection")
+    assert response.status_code == 200
+    body = response.text
+    assert "Into the Inkdark" in body
+    assert body.count("binder--upcoming") == 1
+    assert "Upcoming" in body
+
+
 def test_missing_route_is_gone(client: TestClient):
     response = client.get("/missing")
     assert response.status_code == 404

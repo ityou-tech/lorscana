@@ -23,8 +23,10 @@ LORCANA_RELEASE_ORDER: tuple[str, ...] = (
     "WHI",  # 10. Whispers in the Well
     "WIN",  # 11. Winterspell
     "WUN",  # 12. Wilds Unknown
-    "AOV",  # 13. Attack of the Vine    (placeholder — 0 cards in upstream)
-    "HYC",  # 14. Hyperia City          (placeholder — 0 cards in upstream)
+    "AOV",  # 13. Attack of the Vine!
+    "HYC",  # 14. Hyperia City
+    "ITK",  # 15. Into the Inkdark      (placeholder — 0 cards in upstream)
+    "COQ",  # 16. Cosmic Quest          (placeholder — 0 cards in upstream)
 )
 
 
